@@ -1,3 +1,10 @@
+/*
+    Delayed for jQuery - A plug-in to delay and/or debounce event handlers
+    http://www.theloveofcode.com/jquery/delayed/
+    https://github.com/theloveofcode/delayed-for-jquery
+    Copyright 2012 Tyler Vigeant <tyler@theloveofcode.com>
+    Released under the MIT and GPL licenses.
+*/
 (function( $ ) {
     TLOC_Delayed = {
         functions: {},
@@ -135,7 +142,7 @@
                         if ( selector ) {
                             if ( e.selector == selector ) {
                                 if ( fn ) {
-                                    if ( e.handler = fn ) {
+                                    if ( e.handler == fn ) {
                                          events[ events.length ] = e; 
                                     }
                                 } else {
