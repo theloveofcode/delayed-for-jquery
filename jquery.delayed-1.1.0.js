@@ -4,6 +4,7 @@
     https://github.com/theloveofcode/delayed-for-jquery
     Copyright 2012 Tyler Vigeant <tyler@theloveofcode.com>
     Released under the MIT and GPL licenses.
+    Version 1.1.0
 */
 (function( $ ) {
     TLOC_Delayed = {
@@ -114,7 +115,8 @@
 
         get_events: function( elem, types, selector, fn ) {
             var events = [],
-                rtypenamespace = /^([^\.]*)?(?:\.(.+))?$/;
+                rtypenamespace = /^([^\.]*)?(?:\.(.+))?$/,
+                elemEvents = (parseFloat($().jquery) < 1.8) ? $(elem).data('events') : $._data(elem, 'events');
 
             if ( selector === false || typeof selector === "function" ) {
                 // ( types [, fn] )
@@ -132,25 +134,38 @@
             for ( var t = 0; t < types.length; t++ ) {
                 tns = rtypenamespace.exec( types[t] ) || [];
                 type = origType = tns[1];
+
+                // Support for mouseenter and mouseleave
+                if (type == 'mouseenter') {
+                    type = 'mouseover';
+                    origType = 'mouseenter';
+                } else if (type == 'mouseleave') {
+                    type = 'mouseout';
+                    origType = 'mouseleave';
+                } else {
+                    origType = false;
+                }
                 
-                eventType = $(elem).data('events')[ type ] || [];
+                eventType = elemEvents[ type ] || [];
 
                 for ( var i in eventType ) {
                     e = eventType[i];
 
-                    if ( e.namespace == tns[2] || typeof(tns[2]) == 'undefined' ) {
-                        if ( selector ) {
-                            if ( e.selector == selector ) {
-                                if ( fn ) {
-                                    if ( e.handler == fn ) {
-                                         events[ events.length ] = e; 
+                    if ( (origType && origType == e.origType) || !origType) {
+                        if ( e.namespace == tns[2] || typeof(tns[2]) == 'undefined' ) {
+                            if ( selector ) {
+                                if ( e.selector == selector ) {
+                                    if ( fn ) {
+                                        if ( e.handler == fn ) {
+                                             events.push(e); 
+                                        }
+                                    } else {
+                                       events.push(e); 
                                     }
-                                } else {
-                                   events[ events.length ] = e; 
                                 }
+                            } else {
+                                events.push(e); 
                             }
-                        } else {
-                            events[ events.length ] = e;
                         }
                     }
                 }
@@ -160,13 +175,12 @@
         },
 
         get_event_guids: function( elem, types, selector, fn ) {
-            var guids = [];
-
-            var events = TLOC_Delayed.get_events( elem, types, selector, fn );
+            var guids = [],
+                events = TLOC_Delayed.get_events( elem, types, selector, fn );
 
             for ( var i in events ) {
                 e = events[i];
-                guids[ guids.length ] = e.guid;
+                guids.push(e.guid);
             }
 
             return guids;
